@@ -127,6 +127,24 @@
     (() => {
       const pages = document.querySelector('#poster-pages');
       const hint = document.querySelector('.hint');
+      const viewer = document.querySelector('#viewer');
+      const addViewerHistory = () => {
+        if (!history.state?.sophieViewer) {
+          history.pushState({ ...(history.state || {}), sophieViewer: true }, '', location.href);
+        }
+      };
+      window.addEventListener('popstate', () => {
+        if (viewer.open) viewer.close();
+      });
+      viewer.addEventListener('cancel', (event) => {
+        if (history.state?.sophieViewer) {
+          event.preventDefault();
+          history.back();
+        }
+      });
+      document.querySelector('#close').addEventListener('click', () => {
+        if (history.state?.sophieViewer) history.back();
+      });
       const activityRows = [
         ['0. kl', 'Udstilling', 'I klassen (B015)'],
         ['1. kl', 'Høst-memory konkurrence', 'I klassen (B003)'],
@@ -153,6 +171,7 @@
       };
       document.querySelectorAll('[data-content]').forEach((button) => {
         button.addEventListener('click', () => {
+          addViewerHistory();
           const type = button.dataset.content;
           if (type === 'activity') pages.innerHTML = table(activityRows, 'Aktivitet');
           if (type === 'sales') pages.innerHTML = table(salesRows, 'Salg af');
@@ -161,6 +180,7 @@
       });
       const mapButton = document.querySelector('[data-map="school"]');
       mapButton?.addEventListener('click', () => {
+        addViewerHistory();
         document.querySelector('#viewer-title').textContent = 'Kort';
         pages.innerHTML = '<div class="map-shell"><div class="map-frame-crop"><iframe id="school-map" title="Interaktivt Google My Maps-kort med klassepins" src="https://www.google.com/maps/d/embed?mid=1k2VYtV5YY65ehMQatA5C_UmwT5cAKs4&ehbc=2E312F&ll=54.77360%2C11.87905&z=18&noprof=1" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="map-actions"><a class="map-directions" href="https://www.google.com/maps/dir/?api=1&destination=Merkurs+Plads+4%2C+4800+Nyk%C3%B8bing+Falster" target="_blank" rel="noopener">Åbn rutevejledning</a></div></div>';
         if (hint) hint.hidden = true;
